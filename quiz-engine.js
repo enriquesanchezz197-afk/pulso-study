@@ -17,6 +17,11 @@ export function buildAdaptiveQuestionSet(pool,count,{module='all',difficulty='al
 
 export const buildQuestionSet=(pool,count,random=Math.random)=>buildAdaptiveQuestionSet(pool,count,{},random);
 
+export function updateStreak(current,best,correct){
+  const next=correct?Math.max(0,current)+1:0;
+  return{current:next,best:Math.max(Math.max(0,best),next)};
+}
+
 export function scheduleCard(previous={},rating,now=Date.now()){
   const oldInterval=previous.interval||0;let interval;
   if(rating==='again')interval=1/1440;

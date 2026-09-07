@@ -7,6 +7,8 @@ Aplicación de estudio local inspirada en la energía de Kahoot y la claridad de
 - Incluye 120 preguntas iniciales: 40 por cada presentación.
 - Cada quiz admite hasta 40 preguntas únicas, sin repeticiones.
 - Al seleccionar una presentación, el examen usa exclusivamente preguntas de ese tema.
+- Los PDFs añadidos generan un banco local de 40 preguntas, incluso cuando el archivo tiene pocas oraciones detectables.
+- La racha actual se reinicia al fallar; la mejor racha alcanzada se conserva en el perfil y el historial.
 - Tema y dificultad se usan como prioridades; una sesión larga se completa con contenido complementario.
 - Las flashcards se desbloquean conforme aparecen preguntas en los quizzes y al completar temas.
 - Quiz y flashcards alimentan un mismo calendario de repetición espaciada.
