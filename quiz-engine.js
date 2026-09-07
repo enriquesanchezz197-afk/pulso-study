@@ -1,17 +1,6 @@
 export function buildQuestionSet(pool, count, random = Math.random) {
   if (!Array.isArray(pool) || pool.length === 0 || count < 1) return [];
-  const result = [];
-  let previousId = null;
-  while (result.length < count) {
-    const batch = [...pool].sort(() => random() - 0.5);
-    if (batch.length > 1 && batch[0].id === previousId) [batch[0], batch[1]] = [batch[1], batch[0]];
-    for (const question of batch) {
-      if (result.length >= count) break;
-      result.push({...question, runId: `${question.id}-${result.length}`});
-      previousId = question.id;
-    }
-  }
-  return result;
+  return [...pool].sort(() => random() - 0.5).slice(0,Math.min(count,pool.length)).map((question,index)=>({...question,runId:`${question.id}-${index}`}));
 }
 
 export function scheduleCard(previous = {}, rating, now = Date.now()) {
