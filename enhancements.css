@@ -1,4 +1,5 @@
 .primary,.secondary,.ghost{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}.primary:hover,.secondary:hover,.ghost:hover{transform:translateY(-2px);filter:brightness(1.08)}.primary:active,.secondary:active,.ghost:active{transform:scale(.98)}
+[hidden]{display:none!important}
 .segments{grid-template-columns:repeat(5,1fr)}.segments button{transition:.2s}.segments button:hover{border-color:#7466bd}.segments button.selected{box-shadow:0 6px 18px #6e55df44}.segments button small{display:block;margin-top:3px;color:#b7bcd1}.filter-note,.range-labels{font-size:11px;color:var(--muted);margin:8px 2px 0}.range-labels{display:flex;justify-content:space-between}
 .question-card{animation:questionIn .28s cubic-bezier(.2,.8,.2,1)}@keyframes questionIn{from{opacity:0;transform:translateX(14px) scale(.99)}}
 .answer.correct{animation:correctPulse .35s ease}.answer.wrong{animation:wrongShake .3s ease}@keyframes correctPulse{50%{transform:scale(1.015);box-shadow:0 0 0 4px #4ade8022}}@keyframes wrongShake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}.difficulty-chip{color:#e6dcff;border-color:#6651bb}
