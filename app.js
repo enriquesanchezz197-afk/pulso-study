@@ -1,5 +1,5 @@
 import {seedModules,seedQuestions} from './data.js';
-import {buildQuestionSet,scheduleCard} from './quiz-engine.js';
+import {buildQuestionSet,scheduleCard} from './quiz-engine.js?v=3';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const storeKey='pulso-study-v1'; const defaults={attempts:[],mistakes:{},moduleStats:{},cardProgress:{},streak:0,lastDay:null,customModules:[]};
 let state; try{state={...defaults,...JSON.parse(localStorage.getItem(storeKey)||'{}')}}catch{state={...defaults}};
