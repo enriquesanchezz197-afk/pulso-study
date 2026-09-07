@@ -1,18 +1,23 @@
 const levelRank={easy:0,medium:1,hard:2,exam:3};
+const levelOrder={
+  easy:['easy','medium','hard','exam'],
+  medium:['medium','hard','easy','exam'],
+  hard:['hard','exam','medium','easy'],
+  exam:['exam','hard','medium','easy']
+};
+
+function shuffled(items,random){
+  const result=[...items];
+  for(let index=result.length-1;index>0;index--){const other=Math.floor(random()*(index+1));[result[index],result[other]]=[result[other],result[index]]}
+  return result;
+}
 
 export function buildAdaptiveQuestionSet(pool,count,{module='all',difficulty='all'}={},random=Math.random){
   if(!Array.isArray(pool)||!pool.length||count<1)return[];
   const unique=[...new Map(pool.map(question=>[question.id,question])).values()];
-  const target=levelRank[difficulty];
-  return unique.map(question=>{
-    let priority=random();
-    if(module!=='all'&&question.module===module)priority+=100;
-    if(difficulty!=='all'){
-      const distance=Math.abs((levelRank[question.difficulty]??1)-target);
-      priority+=1000-distance*200;
-    }
-    return{question,priority};
-  }).sort((a,b)=>b.priority-a.priority).slice(0,Math.min(count,40,unique.length)).map(({question},index)=>({...question,runId:`${question.id}-${index}`}));
+  const scoped=module==='all'?unique:unique.filter(question=>question.module===module);
+  const ordered=difficulty==='all'?shuffled(scoped,random):(levelOrder[difficulty]||levelOrder.medium).flatMap(level=>shuffled(scoped.filter(question=>question.difficulty===level),random));
+  return ordered.slice(0,Math.min(count,40,scoped.length)).map((question,index)=>({...question,runId:`${question.id}-${index}`}));
 }
 
 export const buildQuestionSet=(pool,count,random=Math.random)=>buildAdaptiveQuestionSet(pool,count,{},random);

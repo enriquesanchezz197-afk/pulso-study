@@ -9,6 +9,7 @@ Aplicación de estudio local inspirada en la energía de Kahoot y la claridad de
 - Al seleccionar una presentación, el examen usa exclusivamente preguntas de ese tema.
 - Los PDFs añadidos generan un banco local de 40 preguntas, incluso cuando el archivo tiene pocas oraciones detectables.
 - La racha actual se reinicia al fallar; la mejor racha alcanzada se conserva en el perfil y el historial.
+- La dificultad no es solo una etiqueta: Fácil progresa hacia Media, Media hacia Difícil, y Difícil hacia Examen cuando se solicitan sesiones largas.
 - Tema y dificultad se usan como prioridades; una sesión larga se completa con contenido complementario.
 - Las flashcards se desbloquean conforme aparecen preguntas en los quizzes y al completar temas.
 - Quiz y flashcards alimentan un mismo calendario de repetición espaciada.
