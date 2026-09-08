@@ -1,7 +1,6 @@
-const levelRank={easy:0,medium:1,hard:2,exam:3};
 const levelOrder={
   easy:['easy','medium','hard','exam'],
-  medium:['medium','hard','easy','exam'],
+  medium:['medium','hard','exam','easy'],
   hard:['hard','exam','medium','easy'],
   exam:['exam','hard','medium','easy']
 };
@@ -17,7 +16,10 @@ export function buildAdaptiveQuestionSet(pool,count,{module='all',difficulty='al
   const unique=[...new Map(pool.map(question=>[question.id,question])).values()];
   const scoped=module==='all'?unique:unique.filter(question=>question.module===module);
   const ordered=difficulty==='all'?shuffled(scoped,random):(levelOrder[difficulty]||levelOrder.medium).flatMap(level=>shuffled(scoped.filter(question=>question.difficulty===level),random));
-  return ordered.slice(0,Math.min(count,40,scoped.length)).map((question,index)=>({...question,runId:`${question.id}-${index}`}));
+  return ordered.slice(0,Math.min(count,40,scoped.length)).map((question,index)=>{
+    const choices=shuffled(question.options.map((option,originalIndex)=>({option,originalIndex})),random);
+    return{...question,options:choices.map(choice=>choice.option),answer:choices.findIndex(choice=>choice.originalIndex===question.answer),runId:`${question.id}-${index}`};
+  });
 }
 
 export const buildQuestionSet=(pool,count,random=Math.random)=>buildAdaptiveQuestionSet(pool,count,{},random);
@@ -25,6 +27,13 @@ export const buildQuestionSet=(pool,count,random=Math.random)=>buildAdaptiveQues
 export function updateStreak(current,best,correct){
   const next=correct?Math.max(0,current)+1:0;
   return{current:next,best:Math.max(Math.max(0,best),next)};
+}
+
+export function calculateMastery({correct=0,total=0,seen=0,target=40}={}){
+  if(total<=0||target<=0)return 0;
+  const accuracy=Math.max(0,Math.min(1,correct/total));
+  const coverage=Math.max(0,Math.min(1,seen/target));
+  return Math.round(accuracy*coverage*100);
 }
 
 export function scheduleCard(previous={},rating,now=Date.now()){

@@ -4,13 +4,14 @@ Aplicación de estudio local inspirada en la energía de Kahoot y la claridad de
 
 ## Aprendizaje continuo
 
-- Incluye 120 preguntas iniciales: 40 por cada presentación.
+- Incluye 180 preguntas iniciales: 60 por cada presentación y 120 de nivel Difícil o Examen.
 - Cada quiz admite hasta 40 preguntas únicas, sin repeticiones.
 - Al seleccionar una presentación, el examen usa exclusivamente preguntas de ese tema.
-- Los PDFs añadidos generan un banco local de 40 preguntas, incluso cuando el archivo tiene pocas oraciones detectables.
+- Los PDFs añadidos generan un banco local de 60 preguntas, incluso cuando el archivo tiene pocas oraciones detectables.
 - La racha actual se reinicia al fallar; la mejor racha alcanzada se conserva en el perfil y el historial.
-- La dificultad no es solo una etiqueta: Fácil progresa hacia Media, Media hacia Difícil, y Difícil hacia Examen cuando se solicitan sesiones largas.
-- Tema y dificultad se usan como prioridades; una sesión larga se completa con contenido complementario.
+- La dificultad no es solo una etiqueta: Difícil usa análisis multiconcepto y Examen usa casos, secuencias y síntesis dobles.
+- Hay suficientes preguntas avanzadas para completar 40 preguntas Difíciles o 40 de Examen sin recurrir a contenido fácil.
+- Las opciones cambian de posición en cada intento para evitar aprendizaje por ubicación.
 - Las flashcards se desbloquean conforme aparecen preguntas en los quizzes y al completar temas.
 - Quiz y flashcards alimentan un mismo calendario de repetición espaciada.
 - Los avisos solo aparecen cuando existen errores o tarjetas realmente pendientes.
@@ -34,11 +35,13 @@ npm test
 
 ## Datos y privacidad
 
-- Las 120 preguntas iniciales se redactaron exclusivamente con los tres PDFs proporcionados.
+- Las 180 preguntas iniciales se redactaron exclusivamente con los tres PDFs proporcionados.
 - Progreso, historial, módulos y errores se conservan en `localStorage` del navegador.
 - Los PDFs nuevos se procesan dentro del navegador usando PDF.js; no se suben a ningún servidor.
-- La generación local incluida es deliberadamente básica: extrae afirmaciones y crea preguntas preliminares. Conviene revisarlas antes de usarlas en un examen formal.
+- La generación local extrae afirmaciones y crea niveles de recuerdo, aplicación, análisis doble y síntesis. Conviene revisar el material generado antes de usarlo en un examen formal.
 
 ## Arquitectura de generación
 
-`data.js` contiene el banco inicial. La función `upload()` de `app.js` implementa el adaptador local actual. Para integrar un generador avanzado, sustituye esa función por un adaptador que devuelva objetos con: `id`, `module`, `difficulty`, `text`, cuatro `options`, índice `answer` y `explanation`.
+`data.js` compone el banco inicial y los retos de síntesis; `advanced-questions.js` contiene los casos y preguntas de razonamiento; `quiz-engine.js` aísla temas, separa niveles y reorganiza opciones; `pdf-question-generator.js` procesa módulos locales; y `app.js` coordina interfaz, progreso y repetición espaciada.
+
+Cada pregunta usa: `id`, `module`, `difficulty`, `text`, cuatro `options`, índice `answer`, `explanation` y, cuando corresponde, `skill` para describir la operación cognitiva evaluada.

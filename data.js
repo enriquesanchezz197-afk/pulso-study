@@ -1,3 +1,5 @@
+import {advancedOverrides} from './advanced-questions.js?v=10';
+
 export const seedModules=[
  {id:'bio',title:'Modelo biopsicosocial',short:'Equilibrio, riesgo y protección',icon:'🧠',color:'#8b5cf6',source:'Factores biopsicosociales de la salud y la enfermedad.pdf'},
  {id:'signos',title:'Signos, síntomas y lesiones',short:'Conceptos, diferencias y ejemplos',icon:'🩺',color:'#35d3c7',source:'Signos Sintomas Lesiones.pdf'},
@@ -136,4 +138,15 @@ const supplementalCardio=[
 ];
 
 const mapQuestion=([id,module,difficulty,text,options,answer,explanation])=>({id,module,difficulty,text,options,answer,explanation});
-export const seedQuestions=[...baseQuestions,...supplementalBio.map(mapQuestion),...supplementalSigns.map(mapQuestion),...supplementalCardio.map(mapQuestion)];
+const rawQuestions=[...baseQuestions,...supplementalBio.map(mapQuestion),...supplementalSigns.map(mapQuestion),...supplementalCardio.map(mapQuestion)];
+const upgradedQuestions=rawQuestions.map(question=>advancedOverrides[question.id]?{...question,...advancedOverrides[question.id]}:question);
+
+function synthesisQuestions(moduleId){
+ const source=upgradedQuestions.filter(question=>question.module===moduleId&&['hard','exam'].includes(question.difficulty));
+ return source.map((first,index)=>{
+  const second=source[(index+7)%source.length],firstCorrect=first.options[first.answer],secondCorrect=second.options[second.answer],firstWrong=first.options[(first.answer+1)%first.options.length],secondWrong=second.options[(second.answer+1)%second.options.length];
+  return{id:`${moduleId}-synthesis-${index+1}`,module:moduleId,difficulty:index<10?'hard':'exam',skill:index<10?'Análisis doble':'Síntesis de examen',text:`Reto integrado ${index+1}. Resuelve simultáneamente ambos planteamientos:\nI) ${first.text}\nII) ${second.text}`,options:[`I: ${firstCorrect} · II: ${secondCorrect}`,`I: ${firstWrong} · II: ${secondCorrect}`,`I: ${firstCorrect} · II: ${secondWrong}`,`I: ${firstWrong} · II: ${secondWrong}`],answer:0,explanation:`Planteamiento I: ${first.explanation} Planteamiento II: ${second.explanation}`};
+ });
+}
+
+export const seedQuestions=[...upgradedQuestions,...seedModules.flatMap(module=>synthesisQuestions(module.id))];

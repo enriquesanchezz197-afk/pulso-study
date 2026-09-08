@@ -1,7 +1,17 @@
-const levels=['easy','medium','hard','exam'];
-
 const clean=value=>String(value||'').replace(/\s+/g,' ').replace(/^[•·–—-]+\s*/,'').trim();
 const unique=items=>[...new Map(items.filter(Boolean).map(item=>[item.toLocaleLowerCase('es'),item])).values()];
+
+export function reconstructPageText(items=[]){
+  const rows=[];
+  for(const item of items){
+    const text=clean(item?.str);if(!text)continue;
+    const x=Number(item?.transform?.[4]||0),y=Number(item?.transform?.[5]||0);
+    let row=rows.find(candidate=>Math.abs(candidate.y-y)<2);
+    if(!row){row={y,cells:[]};rows.push(row)}
+    row.cells.push({x,text});
+  }
+  return rows.sort((a,b)=>b.y-a.y).map(row=>row.cells.sort((a,b)=>a.x-b.x).map(cell=>cell.text).join(' ')).join('\n');
+}
 
 function wordChunks(text,size=24){
   const words=clean(text).split(' ').filter(Boolean),chunks=[];
@@ -32,17 +42,13 @@ function completion(unit){
   return{start:words.slice(0,cut).join(' '),end:words.slice(cut).join(' ')};
 }
 
-export function generatePdfQuestions({moduleId,title,source,count=40,random=Math.random}){
-  const statements=collectStudyStatements(source),total=Math.min(40,Math.max(1,Number(count)||40));
+export function generatePdfQuestions({moduleId,title,source,count=60,random=Math.random}){
+  const statements=collectStudyStatements(source),total=Math.min(60,Math.max(1,Number(count)||60));
   if(!statements.length)return[];
   return Array.from({length:total},(_,index)=>{
-    const statement=statements[index%statements.length],round=Math.floor(index/statements.length)%4,number=index+1;
-    let text,correct,distractors;
-    if(round===1){
-      text=`Según “${title}”, ¿cómo debe valorarse esta idea? · Comprobación ${number} «${statement}»`;
-      correct='Está respaldada por el documento.';
-      distractors=['El documento afirma exactamente lo contrario.','Pertenece a otro material y no a este tema.','El documento indica que es un concepto inexistente.'];
-    }else if(round===2){
+    const statement=statements[index%statements.length],second=statements[(index+7)%statements.length],number=index+1,difficulty=index<10?'easy':index<20?'medium':index<40?'hard':'exam';
+    let text,correct,distractors,skill;
+    if(difficulty==='medium'){
       const parts=completion(statement);
       if(parts.end){
         text=`Completa la idea ${number} de “${title}”: «${parts.start}…»`;
@@ -53,22 +59,30 @@ export function generatePdfQuestions({moduleId,title,source,count=40,random=Math
         correct=statement;
         distractors=['El documento niega este contenido.','El tema se limita a una idea opuesta.','Esta afirmación pertenece a otro documento.'];
       }
-    }else if(round===3){
-      text=`En el repaso ${number} de “${title}”, ¿qué contenido está respaldado por el archivo?`;
-      correct=statement;
-      distractors=['El archivo sostiene una conclusión contraria.','El material no trata ningún concepto relacionado.','La presentación sustituye el tema por otro no mencionado.'];
+      skill='Aplicación y completado';
+    }else if(difficulty==='hard'){
+      text=`Análisis ${number} de “${title}”. ¿Qué valoración conjunta coincide con el archivo?\nI) ${statement}\nII) ${second}`;
+      correct='Las ideas I y II están respaldadas por el documento.';
+      distractors=['Solo la idea I está respaldada.','Solo la idea II está respaldada.','Ninguna de las dos ideas está respaldada.'];
+      skill='Análisis de dos conceptos';
+    }else if(difficulty==='exam'){
+      text=`Síntesis de examen ${number}. Integra estos dos fragmentos de “${title}”:\nI) ${statement}\nII) ${second}`;
+      correct=`I: ${statement} · II: ${second}`;
+      distractors=[`I: ${statement} · II: El documento afirma lo contrario.`,`I: El archivo niega esta idea. · II: ${second}`,'I y II pertenecen a contenidos ajenos al archivo.'];
+      skill='Síntesis de examen';
     }else{
       text=`¿Cuál afirmación fue extraída de “${title}”? · Concepto ${number}`;
       correct=statement;
       distractors=['Esta afirmación no aparece en el documento.','El documento sostiene una idea opuesta.','Este concepto pertenece a otro tema.'];
+      skill='Recuerdo guiado';
     }
     const choice=shuffledOptions(correct,distractors,random);
-    return{id:`${moduleId}-${index}`,module:moduleId,difficulty:levels[index%levels.length],text,options:choice.options,answer:choice.answer,explanation:`Contenido extraído localmente del PDF: ${statement}`,sourceText:statement};
+    return{id:`${moduleId}-${index}`,module:moduleId,difficulty,text,options:choice.options,answer:choice.answer,explanation:`Contenido extraído localmente del PDF: ${statement}${second!==statement?` Además: ${second}`:''}`,sourceText:statement,skill};
   });
 }
 
 export function upgradeCustomModule(module){
   const source=(module.studyStatements?.length?module.studyStatements:(module.questions||[]).map(question=>question.sourceText||question.explanation?.replace(/^Texto extraído localmente:\s*/,'')||question.options?.[question.answer])).filter(Boolean);
   if(!source.length)return module;
-  return{...module,generatorVersion:2,studyStatements:collectStudyStatements(source),questions:generatePdfQuestions({moduleId:module.id,title:module.title,source,count:40})};
+  return{...module,generatorVersion:3,studyStatements:collectStudyStatements(source),questions:generatePdfQuestions({moduleId:module.id,title:module.title,source,count:60})};
 }
